@@ -1,0 +1,4 @@
+適当に書いたTwitterIRCGateway用のDLR拡張。
+
+(TIGがあるところ)/Configs/(user name)/Scripts
+に放り込んで、 #Console の DLR コンテキストで reload すれば多分有効になります。
