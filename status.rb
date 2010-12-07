@@ -51,7 +51,6 @@ Session.pre_send_message_timeline_status do |sender, e|
   "渋谷",
   "秋葉原",
   "アキバ",
-  "アキハバラ",
   "リナカフェ",
   "おふとん大陸"
   ]
