@@ -1,37 +1,7 @@
 # -*- coding: utf-8 -*-
 Session.pre_send_message_timeline_status do |sender, e|
   
-  #変数とか。
-  client_source = e.status.source.sub(/<a.*">/,"").sub(/<\/a>/,"").chomp.to_s   #"
-  name = e.status.user.name.chomp.to_s
-  name_disp = ""
-  user_protected = ""
-  location = e.status.user.location.chomp.to_s
-  location_disp = ""
-  
-  #nameの整形。フォーマットはお好みで変えると良いと思う。
-  name_disp = "(name #{name})"
-  
-  #locationの整形。フォーマットはお好みで変えると良いと思う。
-  if location != ""
-    location_disp = "(from #{location})"
-  end
-  
-  #protectedの整形。\x03の後の数字がIRCの制御文字なので色が変わる。事故回避のためprotectedだけこっちに書いた。
-  if e.status.user.protected == TRUE
-    user_protected = "\x033¶\x03 "
-  end
-  
-  #client_sourceの整形。フォーマットはお好みで変えると良いと思う。
-  client_source_disp = "(via #{client_source})"
-  
-  #公式RTの色を変えて区別付きやすくする。\x03の後の数字がIRCの制御文字なので色が変わる。
-  ort_re = Regexp.new("(^♻ RT @[a-zA-Z0-9_]+)")
-  ort_re  =~  e.text
-  ort_hit = $1
-  e.text  =  e.text.gsub(ort_re, "\x032#{ort_hit}\x03")
-  
-  
+  #--- 設定とか変数とか ---
   
   #ここで定義したクライアントからのtweetをdrop。
   #主になる四時フィルタ。
@@ -62,7 +32,37 @@ Session.pre_send_message_timeline_status do |sender, e|
   "DNPP"
   ]
   
+  #変数とか。
+  client_source = e.status.source.sub(/<a.*">/,"").sub(/<\/a>/,"").chomp.to_s   #"
+  name = e.status.user.name.chomp.to_s
+  name_disp = ""
+  user_protected = ""
+  location = e.status.user.location.chomp.to_s
+  location_disp = ""
   
+  #nameの整形。フォーマットはお好みで変えると良いと思う。
+  name_disp = "(name #{name})"
+  
+  #locationの整形。フォーマットはお好みで変えると良いと思う。
+  if location != ""
+    location_disp = "(from #{location})"
+  end
+  
+  #protectedの整形。\x03の後の数字がIRCの制御文字なので色が変わる。事故回避のためprotectedだけこっちに書いた。
+  if e.status.user.protected == TRUE
+    user_protected = "\x033¶\x03 "
+  end
+  
+  #client_sourceの整形。フォーマットはお好みで変えると良いと思う。
+  client_source_disp = "(via #{client_source})"
+  
+  #公式RTの色を変えて区別付きやすくする。\x03の後の数字がIRCの制御文字なので色が変わる。
+  ort_re = Regexp.new("(^♻ RT @[a-zA-Z0-9_]+)")
+  ort_re  =~  e.text
+  ort_hit = $1
+  e.text  =  e.text.gsub(ort_re, "\x032#{ort_hit}\x03")
+  
+  #--- ここまで設定とか変数とか ---
   
   #deny_client_source で定義されたクライアントとマッチしたものからのtweetを捨てる。
   deny_client_source.each do |d1|
@@ -114,8 +114,7 @@ Session.pre_send_message_timeline_status do |sender, e|
     
   end
   
-  
-  
   #最後に整形したものを代入して終わり。\x03の後の数字がIRCの制御文字なので色が変わる。Spaceの位置などはお好みで。
   e.text  =  "#{user_protected}#{e.text} \x0314#{client_source_disp} #{location_disp} #{name_disp}"
+  
 end
