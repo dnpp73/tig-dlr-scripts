@@ -1,0 +1,9 @@
+build
+Packages
+.DS_Store
+.LSOverride
+*.pbxuser
+*.mode1*
+*~.nib
+*.tmproj
+*.tm_build_errors
