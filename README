@@ -1,4 +1,15 @@
-適当に書いたTwitterIRCGateway用のDLR拡張。
+for TwitterIRCGateway
 
-(TIGがあるところ)/Configs/(user name)/Scripts
-に放り込んで、 #Console の DLR コンテキストで reload すれば多分有効になります。
+---
+
+tweetの末尾に from と via と name を灰色で追加します。
+チャンネルのトピックにキーワードを設定して抽出してる場合、一々ヒットするのが煩わしいのでエスケープしてますがもうちょっと良いやり方が無いものか…。
+
+公式RTの表示色を青っぽくしたりしてます。
+
+あと、なるほど四時じゃねーの などクライアントを指定してdropさせられます。
+
+---
+
+$TIG_PATH/Configs/$screen_name/Scripts
+に放り込んで、 #Console の DLR コンテキストで reload するか、TIGを再起動して有効にしてください。
