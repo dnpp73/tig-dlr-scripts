@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-class OptimizeStatuses
-
 # 細々とした設定。
 ShowName = TRUE
 NameColor = "14"
@@ -23,16 +21,12 @@ DropClient = [
 ]
 
 # ここで定義した正規表現にマッチしたtweetをdrop。
-# 個人的に多段非公式RTとかfollowmeとかよるほとかそういうのを。
+# 個人的に嫌いな「多段非公式RT」とか「followme系」とか「【拡散希望】が実際にRTされてるもの」とか「よるほ」とかそういうのを。
+# 多段非公式RTとかで [0-9a-zA-Z_] って書いてるのを [\w] って書いても動作しないのなんでなの。
 # ConsoleのFilterコンテキストからやればいいという話もあるし、それが真っ当だと思うんだけど、
 # そうすると Session.pre_send_message_timeline_status に流れてすらこないので、
 # IRCクライアントには送信したくないけどキャプチャしたい、みたいな時に使えるかなと。
-DropTweet = [
-"(:?[RQ]T[\s:]\s?[@＠][a-zA-Z0-9_]+[\s:]?\s?.*){3}",
-"#(:?[kK]ohmi[tT]weet|[fF]ollowme[jJ][pP]|[sS]ougo[fF]ollow|[fF]ollow[dD]aibos[hy]uu?)",
-"RT[\s:]\s?[@＠][a-zA-Z0-9_]+[\s:]?\s?[『\[【]\s?(拡散|(拡散|RT|ＲＴ)(希望|推奨|お?願い|お(願|ねが)いします。?))\s?[』\]】]",
-"^よるほ[うお-ー!！1１、。]*$",
-]
+DropTweet = "(:?(:?[RQ]T[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?.*){3}|#(:?[kK]ohmi[tT]weet|[fF]ollowme[jJ][pP]|[sS]ougo[fF]ollow|[fF]ollow[dD]aibos[hy]uu?)|RT[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?[『\[【]\s?(:?拡散|(:?拡散|RT|ＲＴ)(:?希望|推奨|お?願い|お(:?願|ねが)いします。?))\s?[』\]】]|^よるほ[うお-ー!！1１、。]*$)"
 
 # ここで定義した単語が /(name|location|via)/ にあれば hoge -> h.o.g.e と整形する。
 # Topicを設定して抽出チャンネル作ると一々ひっかかるの回避。
@@ -57,6 +51,7 @@ Escape2 = [
 "DNPP",
 ]
 
+class OptimizeStatuses
   def initialize(e)
     @e = e
     @via = e.status.source.gsub(/\n/," ").sub(/<a.*\">/,"").sub(/<\/a>/,"")
@@ -101,9 +96,7 @@ Escape2 = [
   end
   
   def drop_tweet
-    DropTweet.each do |key|
-      @e.cancel = true if ( Regexp.new(key) =~ @e.status.text )
-    end
+    @e.cancel = true if ( Regexp.new(DropTweet) =~ @e.status.text )
   end
   
   def line_gsub
@@ -113,11 +106,10 @@ Escape2 = [
     @e.text = @e.text.gsub(/\n/,"\x0315 \x03")
   end
   
-  def escape(target,keyword,escape)
+  def escape(target="",keyword=[""],escape="")
     keyword.each do |key|
       target = target.gsub(Regexp.new(key)) do |match|
-        replace = ""
-        match.split(//u).each { |k| replace << k + escape }
+        replace = "";match.split(//u).each { |k| replace << k + escape }
         match = replace[0,replace.size-escape.size]
       end
     end
@@ -127,7 +119,7 @@ Escape2 = [
   def add_e_text
     # 公式RTの色変えたり、nameとかlocationとかviaとかprotectedをe.textに付加したり、
     # キーワードのエスケープとかをする。
-    @e.text = @e.text.sub(/^♻ RT @[a-zA-Z0-9_]+/) { |hit| "\x03"+OrtColor+hit+"\x03" } if ChangeOrtColor
+    @e.text = @e.text.sub(/^♻ RT @[0-9a-zA-Z_]+/) { |hit| "\x03"+OrtColor+hit+"\x03" } if ChangeOrtColor
     @e.text = self.escape(@e.text,Escape2,"..") if ( @via == "Tumblr" )
     name_d = ShowName ? " \x03"+NameColor+"(name "+self.escape(self.escape(@name,Escape1,"."),Escape2,"..")+")\x03" : ""
     location_d = ( ShowLocation && ( @location != "" ) ) ? " \x03"+LocationColor+"(from "+self.escape(self.escape(@location,Escape1,"."),Escape2,"..")+")\x03" : ""
@@ -139,12 +131,11 @@ Escape2 = [
   
   def main
     self.drop_client
-    self.drop_tweet
-    self.line_gsub
-    self.add_e_text
+    self.drop_tweet if ( @e.cancel == false )
+    self.line_gsub if ( @e.cancel == false )
+    self.add_e_text if ( @e.cancel == false )
   end
 end
-
 
 # タイムラインの一ステータスを受信してクライアントに送信する直前のイベント
 Session.pre_send_message_timeline_status do |sender, e|
