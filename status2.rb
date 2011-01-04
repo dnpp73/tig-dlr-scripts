@@ -26,7 +26,7 @@ DropClient = [
 # ConsoleのFilterコンテキストからやればいいという話もあるし、それが真っ当だと思うんだけど、
 # そうすると Session.pre_send_message_timeline_status に流れてすらこないので、
 # IRCクライアントには送信したくないけどキャプチャしたい、みたいな時に使えるかなと。
-DropTweet = "(:?(:?[RQ]T[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?.*){3}|#(:?[kK]ohmi[tT]weet|[fF]ollowme[jJ][pP]|[sS]ougo[fF]ollow|[fF]ollow[dD]aibos[hy]uu?)|RT[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?[『\[【]\s?(:?拡散|(:?拡散|RT|ＲＴ)(:?希望|推奨|お?願い|お(:?願|ねが)いします。?))\s?[』\]】]|^よるほ[うお-ー!！1１、。]*$)"
+DropTweet = "(?:(?:[RQ]T[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?.*){3}|#(?:[kK]ohmi[tT]weet|[fF]ollowme[jJ][pP]|[sS]ougo[fF]ollow|[fF]ollow[dD]aibos[hy]uu?)|RT[\s:]\s?[@＠][0-9a-zA-Z_]+[\s:]?\s?[『\[【]\s?(?:拡散|(?:拡散|RT|ＲＴ)(?:希望|推奨|お?願い|お(?:願|ねが)いします。?))\s?[』\]】]|^よるほ[うお-ー!！1１、。]*$)"
 
 # ここで定義した単語が /(name|location|via)/ にあれば hoge -> h.o.g.e と整形する。
 # Topicを設定して抽出チャンネル作ると一々ひっかかるの回避。
