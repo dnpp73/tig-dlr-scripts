@@ -61,33 +61,43 @@ class OptimizeStatuses
     @status_user = {
       'screen_name' => e.status.user.screen_name ,
       'name' => e.status.user.name ,
-      'user_id' => e.status.user.id.to_s ,
+      'user_id' => e.status.user.id ,
       'desc' => e.status.user.description ,
       'location' => e.status.user.location ,
       'url' => e.status.user.url ,
       'icon' => e.status.user.profile_image_url ,
-      #'statuses_count' => e.status.user.statuses_count ,
-      #'favourites_count' => e.status.user.favourites_count ,
-      #'friends_count' => e.status.user.friends_count ,
-      #'followers_count' => e.status.user.followers_count ,
-      #'listed_count' => e.status.user.listed_count ,
       'protected' => e.status.user.protected ,
-      #e.status.retweeted_status.text.to_s ,
-      #e.status.retweeted_status.user.screen_name.to_s ,
-      #e.status.retweeted_status.user.created_at.to_s ,
-      #e.status.retweeted_status.user.location.to_s ,
-      #e.status.retweeted_status.user.name.to_s ,
     }
     @status = {
-      'ca' => e.status.created_at.to_s ,
+      'ca' => e.status.created_at ,
       'via' => e.status.source ,
-      'status_id' => e.status.id.to_s ,
-      'text' => e.status.text.to_s ,
-      'in_reply_to_status_id' => e.status.in_reply_to_status_id.to_s ,
-      'in_reply_to_user_id' => e.status.in_reply_to_user_id.to_s ,
-      #'in_reply_to_screen_name' => e.status.in_reply_to_screen_name ,
-      #'hashtags' => e.status.entities.hashtags ,
+      'status_id' => e.status.id ,
+      'text' => e.status.text ,
+      'in_reply_to_status_id' => e.status.in_reply_to_status_id ,
+      'in_reply_to_user_id' => e.status.in_reply_to_user_id ,
     }
+    if e.status.retweeted_status
+      @rt_status_user = {
+        'screen_name' => e.status.retweeted_status.user.screen_name ,
+        'name' => e.status.retweeted_status.user.name ,
+        'user_id' => e.status.retweeted_status.user.id ,
+        'desc' => e.status.retweeted_status.user.description ,
+        'location' => e.status.retweeted_status.user.location ,
+        'url' => e.status.retweeted_status.user.url ,
+        'icon' => e.status.retweeted_status.user.profile_image_url ,
+        'protected' => e.status.retweeted_status.user.protected ,
+      }
+      @rt_status = {
+        'ca' => e.status.retweeted_status.created_at ,
+        'via' => e.status.retweeted_status.source ,
+        'status_id' => e.status.retweeted_status.id ,
+        'text' => e.status.retweeted_status.text ,
+        'in_reply_to_status_id' => e.status.retweeted_status.in_reply_to_status_id ,
+        'in_reply_to_user_id' => e.status.retweeted_status.in_reply_to_user_id ,
+      }
+    else
+      @rt_status = Hash.new ; @rt_status_user = Hash.new
+    end
   end
   
   def drop_client
@@ -96,6 +106,14 @@ class OptimizeStatuses
   
   def drop_tweet
     @e.cancel = true if ( Regexp.new(DropTweet) =~ @e.status.text )
+  end
+  
+  def ort_fix
+    if @e.status.retweeted_status
+      text = '♻ RT @' + @e.status.retweeted_status.user.screen_name + ': ' + @e.status.retweeted_status.text
+      cut = text.split(//u)[0,138].to_s + ' ...'
+      @e.text = @e.text.sub(cut,text)
+    end
   end
   
   def line_gsub
@@ -118,7 +136,7 @@ class OptimizeStatuses
   def add_e_text
     # 公式RTの色変えたり、nameとかlocationとかviaとかprotectedをe.textに付加したり、
     # キーワードのエスケープとかをする。
-    @e.text = @e.text.sub(/^♻ RT @[0-9a-zA-Z_]+:/) { |hit| "\x03"+OrtColor+hit+"\x03" } if ChangeOrtColor
+    @e.text = @e.text.sub(/^♻ RT @[\w]+:/) { |hit| "\x03"+OrtColor+hit+"\x03" } if ChangeOrtColor
     @e.text = self.escape(@e.text,Escape2,'..') if ( @via == 'Tumblr' )
     name_d = ShowName ? " \x03"+NameColor+'('+self.escape(self.escape(@name,Escape1,'.'),Escape2,'..')+")\x03" : ''
     location_d = ( ShowLocation && ( @location != '' ) ) ? " \x03"+LocationColor+'('+self.escape(self.escape(@location,Escape1,'.'),Escape2,'..')+")\x03" : ''
@@ -131,14 +149,10 @@ class OptimizeStatuses
   def main
     self.drop_client
     self.drop_tweet if !@e.cancel
+    self.ort_fix if !@e.cancel
     self.line_gsub if !@e.cancel
     self.add_e_text if !@e.cancel
   end
-#  def d(content)
-#    io = open('/Users/DNPP/Dropbox/TIGConfig/phoenix73_/Scripts/debug.txt','a+')
-#    io.puts content
-#    io.close
-#  end
 end
 
 # タイムラインの一ステータスを受信してクライアントに送信する直前のイベント
