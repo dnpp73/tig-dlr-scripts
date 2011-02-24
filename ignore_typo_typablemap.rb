@@ -8,7 +8,7 @@
 # MicrosoftIMEやGoogleIMEだともっと違う形になると思うので、各自で書き換えてください。
 # skkで q を打ってカタカナモードになったときの事を考えてないです。ちょっと悩んでる。
 
-Pattern = "^(?:(?:れ|う|うせ|ぉ|ぱ|ふぁ)? (?:[ぁぃぅぇぉか-ん]|[あいうえお]{2}){1,2}|うんど|[a-z]{0,5} (?:[aiueokgqszjtdnhbfpvmyrwl][aiueo]){1,2})$"
+Pattern = '^(?:(?:れ|う|うせ|ぉ|ぱ|ふぁ)? (?:[ぁぃぅぇぉか-ん]|[あいうえお]{2}){1,2}|うんど|[a-z]{0,5} (?:[aiueokgqszjtdnhbfpvmyrwl][aiueo]){1,2})$'
 
 # ステータス更新直前のイベント
 Session.pre_send_update_status do |sender, e|
